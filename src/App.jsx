@@ -39,6 +39,12 @@ function App() {
     setPlaying(false);
   }
 
+  function getAudioName() {
+    const src = audioRef.current?.src;
+    if (!src) return "";
+    return src.split("/").pop().replace(".mp3", "").replaceAll("-", " ");
+  }
+
   return (
     <div>
       {/* audio tag */}
@@ -55,15 +61,19 @@ function App() {
             }}
           ></div>
         </div>
-        {/* div tag for button + playtime */}
-        <div className="flex items-center gap-4 bg-gray-600 p-6 rounded shadow">
-          <button
-            className="py-1 px-2 text-white bg-gray-600 rounded hover:bg-gray-500 cursor-pointer"
-            onClick={toggleAudio}
-          >
-            {playing ? <Pause /> : <Play />}
-          </button>
-          <p className="text-white">{`${Math.floor(playTime / 60)}:${String(Math.floor(playTime % 60)).padStart(2, "0")}`}</p>
+        {/* div tag for button + playtime + song name */}
+        <div className="flex items-center gap-4 bg-gray-600 p-6 rounded shadow justify-between">
+          {/* div tag for button + playtime */}
+          <div className="flex items-center">
+            <button
+              className="py-1 px-2 text-white bg-gray-600 rounded hover:bg-gray-500 cursor-pointer"
+              onClick={toggleAudio}
+            >
+              {playing ? <Pause /> : <Play />}
+            </button>
+            <p className="text-white">{`${Math.floor(playTime / 60)}:${String(Math.floor(playTime % 60)).padStart(2, "0")}`}</p>
+          </div>
+          <p className="text-white text-2xl">{getAudioName()}</p>
         </div>
       </div>
     </div>
