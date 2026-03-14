@@ -58,42 +58,57 @@ function App() {
   }
 
   return (
-    <div>
+    <div className="bg-neutral-600 max-w-3xl mx-auto rounded-2xl">
       {/* audio tag */}
       <audio src="src/data/6-foot-7-foot.mp3" ref={audioRef}></audio>
-      {/* div tag for the lyrics tab */}
-      <div className="h-90 overflow-y-auto flex flex-col gap-2 p-4 max-w-lg mx-auto mt-10 bg-gray-200 rounded-2xl">
+      {/* lyrics tab */}
+      <div className="h-120 overflow-y-auto flex flex-col gap-7 p-4 max-w-2xl mx-auto mt-9 rounded-2xl text-2xl text-gray-300 bg-auto">
         {lyrics}
       </div>
 
-      {/* div tag for progress bar + button + playtime. */}
-      <div className="flex flex-col gap-4 p-4 max-w-lg mx-auto mt-5">
-        {/* progess bar background */}
-        <div
-          className="w-full h-4 bg-gray-200 rounded-full overflow-hidden"
-          onClick={handleSeek}
-        >
-          {/* progress bar fill-in */}
-          <div
-            className="h-full bg-blue-500 transition-all duration-300 ease-out"
-            style={{
-              width: `${(playTime / (audioRef.current?.duration || 1)) * 100}%`,
-            }}
-          ></div>
+      {/* progress bar + button + playtime + songname. */}
+      <div className="flex flex-col gap-3 p-4 max-w-3xl mx-auto mt-5">
+        {/* song name */}
+        <div className="flex flex-col gap-2 mt-1 mb-4">
+          <p className="text-white text-3xl text-center">{getAudioName()}</p>
+          {/* artist name, hard code for now */}
+          <p className="text-white text-1xl text-center">Lil Wayne</p>
         </div>
-        {/* div tag for button + playtime + song name */}
-        <div className="flex items-center gap-4 bg-gray-600 p-6 rounded shadow justify-between">
-          {/* div tag for button + playtime */}
-          <div className="flex items-center">
-            <button
-              className="py-1 px-2 text-white bg-gray-600 rounded hover:bg-gray-500 cursor-pointer"
-              onClick={toggleAudio}
+
+        {/* progress bar and timestamps */}
+        <div className="flex flex-col gap-2">
+          {/* progress bar */}
+          <div>
+            {/* progess bar background */}
+            <div
+              className="w-full h-1 bg-gray-200 rounded-full cursor-pointer"
+              onClick={handleSeek}
             >
-              {playing ? <Pause /> : <Play />}
-            </button>
-            <p className="text-white">{`${Math.floor(playTime / 60)}:${String(Math.floor(playTime % 60)).padStart(2, "0")}`}</p>
+              {/* progress bar fill-in */}
+              <div
+                className="h-full bg-red-400 transition-all duration-300 ease-out relative"
+                style={{
+                  width: `${(playTime / (audioRef.current?.duration || 1)) * 100}%`,
+                }}
+              >
+                {/* progress dot */}
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow hover:border cursor-pointer"></div>
+              </div>
+            </div>
           </div>
-          <p className="text-white text-2xl">{getAudioName()}</p>
+          {/* timestamps */}
+          <div className="flex flex-row justify-between">
+            <p className="text-white">{`${Math.floor(playTime / 60)}:${String(Math.floor(playTime % 60)).padStart(2, "0")}`}</p>
+            <p className="text-white">{`${Math.floor((audioRef.current?.duration || 1) / 60)}:${String(Math.floor((audioRef.current?.duration || 1) % 60)).padStart(2, "0")}`}</p>
+          </div>
+        </div>
+        <div className="flex flex-row justify-center w-full p-0">
+          <button
+            className="py-1 px-2 text-white rounded hover:bg-gray-500 cursor-pointer"
+            onClick={toggleAudio}
+          >
+            {playing ? <Pause /> : <Play />}
+          </button>
         </div>
       </div>
     </div>
