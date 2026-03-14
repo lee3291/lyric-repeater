@@ -6,6 +6,8 @@ function App() {
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef(null);
   const [playTime, setPlayTime] = useState(0);
+  const [currLine, setCurrLine] = useState();
+  const lyricRef = useRef(null);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -17,6 +19,12 @@ function App() {
       audio.removeEventListener("ended", handleEnded);
     };
   }, []);
+
+  useEffect(() => {
+    if (lyricRef.current) {
+      lyricRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [currLine]);
 
   function toggleAudio() {
     if (audioRef.current.paused) {
@@ -34,6 +42,7 @@ function App() {
 
   function handleTimeUpdate() {
     setPlayTime(audioRef.current.currentTime);
+    handleLineUpdate();
   }
 
   function handleEnded() {
@@ -47,8 +56,31 @@ function App() {
   }
 
   const lyrics = lyricsData.map((line) => {
-    return <p key={line.time}>{line.text}</p>;
+    if (line.time == currLine?.time) {
+      return (
+        <p key={line.time} ref={lyricRef} className="text-white">
+          {line.text}
+        </p>
+      );
+    } else {
+      return (
+        <p key={line.time} className="text-white opacity-40">
+          {line.text}
+        </p>
+      );
+    }
   });
+
+  function handleLineUpdate() {
+    const currTime = audioRef.current.currentTime;
+    for (let i = lyricsData.length - 1; i >= 0; i--) {
+      // slight delay cause it's too fast.
+      if (lyricsData[i].time <= currTime - 1) {
+        setCurrLine(lyricsData[i]);
+        break;
+      }
+    }
+  }
 
   function handleSeek(e) {
     const bar = e.currentTarget.getBoundingClientRect();
@@ -62,7 +94,7 @@ function App() {
       {/* audio tag */}
       <audio src="src/data/6-foot-7-foot.mp3" ref={audioRef}></audio>
       {/* lyrics tab */}
-      <div className="h-120 overflow-y-auto flex flex-col gap-7 p-4 max-w-2xl mx-auto mt-9 rounded-2xl text-2xl text-gray-300 bg-auto">
+      <div className="h-120 overflow-y-auto flex flex-col gap-7 p-4 max-w-2xl mx-auto mt-9 rounded-2xl text-2xl bg-auto">
         {lyrics}
       </div>
 
