@@ -50,6 +50,13 @@ function App() {
     return <p key={line.time}>{line.text}</p>;
   });
 
+  function handleSeek(e) {
+    const bar = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - bar.left;
+    const percentage = clickX / bar.width;
+    audioRef.current.currentTime = percentage * audioRef.current.duration;
+  }
+
   return (
     <div>
       {/* audio tag */}
@@ -62,7 +69,10 @@ function App() {
       {/* div tag for progress bar + button + playtime. */}
       <div className="flex flex-col gap-4 p-4 max-w-lg mx-auto mt-5">
         {/* progess bar background */}
-        <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className="w-full h-4 bg-gray-200 rounded-full overflow-hidden"
+          onClick={handleSeek}
+        >
           {/* progress bar fill-in */}
           <div
             className="h-full bg-blue-500 transition-all duration-300 ease-out"
