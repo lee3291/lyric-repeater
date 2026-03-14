@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause } from "lucide-react";
+import lyricsData from "./data/lyrics.json";
 
 function App() {
   const [playing, setPlaying] = useState(false);
@@ -45,12 +46,21 @@ function App() {
     return src.split("/").pop().replace(".mp3", "").replaceAll("-", " ");
   }
 
+  const lyrics = lyricsData.map((line) => {
+    return <p key={line.time}>{line.text}</p>;
+  });
+
   return (
     <div>
       {/* audio tag */}
       <audio src="src/data/6-foot-7-foot.mp3" ref={audioRef}></audio>
+      {/* div tag for the lyrics tab */}
+      <div className="h-90 overflow-y-auto flex flex-col gap-2 p-4 max-w-lg mx-auto mt-10 bg-gray-200 rounded-2xl">
+        {lyrics}
+      </div>
+
       {/* div tag for progress bar + button + playtime. */}
-      <div className="flex flex-col gap-4 p-4 max-w-lg mx-auto mt-20">
+      <div className="flex flex-col gap-4 p-4 max-w-lg mx-auto mt-5">
         {/* progess bar background */}
         <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
           {/* progress bar fill-in */}
