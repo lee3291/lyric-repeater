@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Pin, PinOff } from "lucide-react";
 import lyricsData from "./data/lyrics.json";
 
 function App() {
@@ -8,6 +8,9 @@ function App() {
   const [playTime, setPlayTime] = useState(0);
   const [currLine, setCurrLine] = useState();
   const lyricRef = useRef(null);
+  const [loopLine, setLoopLine] = useState(false);
+  const loopLineRef = useRef(false);
+  const loopLineDataRef = useRef(null);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -26,7 +29,7 @@ function App() {
     }
   }, [currLine]);
 
-  function toggleAudio() {
+  function handleToggleAudio() {
     if (audioRef.current.paused) {
       audioRef.current.play();
       setPlaying(true);
@@ -43,6 +46,25 @@ function App() {
   function handleTimeUpdate() {
     setPlayTime(audioRef.current.currentTime);
     handleLineUpdate();
+
+    if (loopLineRef.current) {
+      const currTime = loopLineDataRef.current;
+      let startTime = 0;
+      let endTime = 0;
+
+      for (let i = lyricsData.length - 1; i >= 0; i--) {
+        if (lyricsData[i].time < currTime) {
+          if (lyricsData[i] && lyricsData[i + 1]) {
+            startTime = lyricsData[i].time + 1.1;
+            endTime = lyricsData[i + 1].time + 1.1;
+            if (audioRef.current.currentTime > endTime) {
+              audioRef.current.currentTime = startTime;
+            }
+          }
+          break;
+        }
+      }
+    }
   }
 
   function handleEnded() {
@@ -62,7 +84,7 @@ function App() {
           key={line.time}
           ref={lyricRef}
           className="text-white"
-          onClick={() => handleLyricJump(line.time + 0.9)}
+          onClick={() => handleLyricJump(line.time + 1.1)}
         >
           {line.text}
         </p>
@@ -101,6 +123,8 @@ function App() {
   function handleLyricJump(lineTime) {
     audioRef.current.currentTime = lineTime;
   }
+
+  function handleLoopLine() {}
 
   return (
     <div className="bg-neutral-600 max-w-3xl mx-auto rounded-2xl">
@@ -148,11 +172,23 @@ function App() {
           </div>
         </div>
         <div className="flex flex-row justify-center w-full p-0">
+          {/* play/pause button */}
           <button
             className="py-1 px-2 text-white rounded hover:bg-gray-500 cursor-pointer"
-            onClick={toggleAudio}
+            onClick={handleToggleAudio}
           >
             {playing ? <Pause /> : <Play />}
+          </button>
+          {/* loop line button */}
+          <button
+            className="py-1 px-2 text-white rounded hover:bg-gray-500 cursor-pointer"
+            onClick={() => {
+              loopLineDataRef.current = audioRef.current.currentTime;
+              loopLineRef.current = !loopLineRef.current;
+              setLoopLine(!loopLine);
+            }}
+          >
+            {loopLine ? <PinOff /> : <Pin />}
           </button>
         </div>
       </div>
