@@ -7,11 +7,11 @@ function App() {
   const audioRef = useRef(null);
   const [playTime, setPlayTime] = useState(0);
   const [currLine, setCurrLine] = useState();
-  const lyricRef = useRef(null);
+  const currLinePtagRef = useRef(null);
   const [loopLine, setLoopLine] = useState(false);
-  const loopLineRef = useRef(false);
-  const loopLineDataRef = useRef(null);
-  const loopLineObjectRef = useRef(null);
+  const isPinningRef = useRef(false);
+  const pinnedLineTimeRef = useRef(null);
+  const pinnedLineObjRef = useRef(null);
   const autoScrollRef = useRef(true);
   const scrollTimerRef = useRef(null);
 
@@ -27,8 +27,11 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (lyricRef.current && autoScrollRef.current) {
-      lyricRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (currLinePtagRef.current && autoScrollRef.current) {
+      currLinePtagRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     }
   }, [currLine]);
 
@@ -50,19 +53,22 @@ function App() {
     setPlayTime(audioRef.current.currentTime);
     handleLineUpdate();
 
-    if (loopLineRef.current) {
-      const currTime = loopLineDataRef.current;
+    if (isPinningRef.current) {
+      const currTime = pinnedLineTimeRef.current;
       let startTime = 0;
       let endTime = 0;
 
       for (let i = lyricsData.length - 1; i >= 0; i--) {
         if (lyricsData[i].time < currTime) {
-          if (lyricsData[i] && lyricsData[i + 1]) {
+          if (lyricsData[i + 1]) {
             startTime = lyricsData[i].time + 1.1;
             endTime = lyricsData[i + 1].time + 1.1;
-            if (audioRef.current.currentTime > endTime) {
-              audioRef.current.currentTime = startTime;
-            }
+          } else {
+            startTime = lyricsData[i].time + 1.1;
+            endTime = audioRef.current.duration;
+          }
+          if (audioRef.current.currentTime > endTime) {
+            audioRef.current.currentTime = startTime;
           }
           break;
         }
@@ -72,6 +78,11 @@ function App() {
 
   function handleEnded() {
     setPlaying(false);
+    if (isPinningRef.current) {
+      audioRef.current.currentTime = pinnedLineTimeRef.current;
+      audioRef.current.play();
+      setPlaying(true);
+    }
   }
 
   function getAudioName() {
@@ -82,7 +93,7 @@ function App() {
 
   const lyrics = lyricsData.map((line) => {
     const isCurrent = line.time === currLine?.time;
-    const isPinned = loopLineObjectRef.current?.time === line.time;
+    const isPinned = pinnedLineObjRef.current?.time === line.time;
 
     let className = "";
     if (isCurrent) {
@@ -98,7 +109,7 @@ function App() {
     return (
       <p
         key={line.time}
-        ref={isCurrent ? lyricRef : null}
+        ref={isCurrent ? currLinePtagRef : null}
         className={`${className} group flex items-center gap-2`}
         onClick={() => handleLyricJump(line.time + 1.1)}
       >
@@ -110,11 +121,11 @@ function App() {
             onClick={(e) => {
               e.stopPropagation();
               handleLyricJump(line.time + 1.1);
-              loopLineDataRef.current = audioRef.current.currentTime;
-              loopLineObjectRef.current = loopLineRef.current
+              pinnedLineTimeRef.current = audioRef.current.currentTime;
+              pinnedLineObjRef.current = isPinningRef.current
                 ? null // unpinning, clear it
                 : getLineByTime(audioRef.current.currentTime); // pinning, set it
-              loopLineRef.current = !loopLineRef.current;
+              isPinningRef.current = !isPinningRef.current;
               setLoopLine(!loopLine);
             }}
           >
@@ -225,11 +236,11 @@ function App() {
           <button
             className="py-1 px-2 text-white rounded hover:bg-gray-500 cursor-pointer"
             onClick={() => {
-              loopLineDataRef.current = audioRef.current.currentTime;
-              loopLineObjectRef.current = getLineByTime(
+              pinnedLineTimeRef.current = audioRef.current.currentTime;
+              pinnedLineObjRef.current = getLineByTime(
                 audioRef.current.currentTime,
               );
-              loopLineRef.current = !loopLineRef.current;
+              isPinningRef.current = !isPinningRef.current;
               setLoopLine(!loopLine);
             }}
           >
