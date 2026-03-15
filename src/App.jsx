@@ -11,6 +11,7 @@ function App() {
   const [loopLine, setLoopLine] = useState(false);
   const loopLineRef = useRef(false);
   const loopLineDataRef = useRef(null);
+  const loopLineObjectRef = useRef(null);
   const autoScrollRef = useRef(true);
   const scrollTimerRef = useRef(null);
 
@@ -81,6 +82,18 @@ function App() {
 
   const lyrics = lyricsData.map((line) => {
     if (line.time == currLine?.time) {
+      if (loopLineObjectRef.current == currLine) {
+        return (
+          <p
+            key={line.time}
+            ref={lyricRef}
+            className="text-white border-l-4 border-red-400 pl-2"
+            onClick={() => handleLyricJump(line.time + 1.1)}
+          >
+            {line.text}
+          </p>
+        );
+      }
       return (
         <p
           key={line.time}
@@ -132,6 +145,15 @@ function App() {
     scrollTimerRef.current = setTimeout(() => {
       autoScrollRef.current = true;
     }, 1500);
+  }
+
+  function getLineByTime(time) {
+    for (let i = lyricsData.length - 1; i >= 0; i--) {
+      if (lyricsData[i].time < time) {
+        return lyricsData[i];
+      }
+    }
+    return null;
   }
 
   return (
@@ -195,6 +217,9 @@ function App() {
             className="py-1 px-2 text-white rounded hover:bg-gray-500 cursor-pointer"
             onClick={() => {
               loopLineDataRef.current = audioRef.current.currentTime;
+              loopLineObjectRef.current = getLineByTime(
+                audioRef.current.currentTime,
+              );
               loopLineRef.current = !loopLineRef.current;
               setLoopLine(!loopLine);
             }}
