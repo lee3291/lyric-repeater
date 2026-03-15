@@ -81,40 +81,49 @@ function App() {
   }
 
   const lyrics = lyricsData.map((line) => {
-    if (line.time == currLine?.time) {
-      if (loopLineObjectRef.current == currLine) {
-        return (
-          <p
-            key={line.time}
-            ref={lyricRef}
-            className="text-white border-l-4 border-red-400 pl-2"
-            onClick={() => handleLyricJump(line.time + 1.1)}
-          >
-            {line.text}
-          </p>
-        );
+    const isCurrent = line.time === currLine?.time;
+    const isPinned = loopLineObjectRef.current?.time === line.time;
+
+    let className = "";
+    if (isCurrent) {
+      if (isPinned) {
+        className = "text-white";
+      } else {
+        className = "text-white";
       }
-      return (
-        <p
-          key={line.time}
-          ref={lyricRef}
-          className="text-white"
-          onClick={() => handleLyricJump(line.time + 1.1)}
-        >
-          {line.text}
-        </p>
-      );
     } else {
-      return (
-        <p
-          key={line.time}
-          className="text-white opacity-40"
-          onClick={() => handleLyricJump(line.time + 1.1)}
-        >
-          {line.text}
-        </p>
-      );
+      className = "text-white opacity-40";
     }
+
+    return (
+      <p
+        key={line.time}
+        ref={isCurrent ? lyricRef : null}
+        className={`${className} group flex items-center gap-2`}
+        onClick={() => handleLyricJump(line.time + 1.1)}
+      >
+        <span
+          className={`${isPinned ? "opacity-100 border-r-3 border-red-400" : "opacity-0 group-hover:opacity-100"} transition flex-shrink-0 pr-1`}
+        >
+          <button
+            className="py-1 px-2 text-white rounded cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleLyricJump(line.time + 1.1);
+              loopLineDataRef.current = audioRef.current.currentTime;
+              loopLineObjectRef.current = loopLineRef.current
+                ? null // unpinning, clear it
+                : getLineByTime(audioRef.current.currentTime); // pinning, set it
+              loopLineRef.current = !loopLineRef.current;
+              setLoopLine(!loopLine);
+            }}
+          >
+            {loopLine ? <PinOff /> : <Pin />}
+          </button>
+        </span>
+        {line.text}
+      </p>
+    );
   });
 
   function handleLineUpdate() {
@@ -162,7 +171,7 @@ function App() {
       <audio src="src/data/6-foot-7-foot.mp3" ref={audioRef}></audio>
       {/* lyrics tab */}
       <div
-        className="h-120 overflow-y-auto flex flex-col gap-7 p-4 max-w-2xl mx-auto mt-9 rounded-2xl text-2xl bg-auto"
+        className="h-120 overflow-y-auto flex flex-col gap-7 p-4 max-w-3xl mx-auto mt-9 rounded-2xl text-2xl bg-auto"
         onScroll={handleAutoScrollToggle}
       >
         {lyrics}
@@ -212,7 +221,7 @@ function App() {
           >
             {playing ? <Pause /> : <Play />}
           </button>
-          {/* loop line button */}
+          {/* loop line button(pinButton) */}
           <button
             className="py-1 px-2 text-white rounded hover:bg-gray-500 cursor-pointer"
             onClick={() => {
