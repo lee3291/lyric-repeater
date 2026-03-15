@@ -58,13 +58,22 @@ function App() {
   const lyrics = lyricsData.map((line) => {
     if (line.time == currLine?.time) {
       return (
-        <p key={line.time} ref={lyricRef} className="text-white">
+        <p
+          key={line.time}
+          ref={lyricRef}
+          className="text-white"
+          onClick={() => handleLyricJump(line.time + 0.9)}
+        >
           {line.text}
         </p>
       );
     } else {
       return (
-        <p key={line.time} className="text-white opacity-40">
+        <p
+          key={line.time}
+          className="text-white opacity-40"
+          onClick={() => handleLyricJump(line.time + 1.1)}
+        >
           {line.text}
         </p>
       );
@@ -87,6 +96,10 @@ function App() {
     const clickX = e.clientX - bar.left;
     const percentage = clickX / bar.width;
     audioRef.current.currentTime = percentage * audioRef.current.duration;
+  }
+
+  function handleLyricJump(lineTime) {
+    audioRef.current.currentTime = lineTime;
   }
 
   return (
