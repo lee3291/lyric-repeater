@@ -11,6 +11,8 @@ function App() {
   const [loopLine, setLoopLine] = useState(false);
   const loopLineRef = useRef(false);
   const loopLineDataRef = useRef(null);
+  const autoScrollRef = useRef(true);
+  const scrollTimerRef = useRef(null);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -24,7 +26,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (lyricRef.current) {
+    if (lyricRef.current && autoScrollRef.current) {
       lyricRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [currLine]);
@@ -124,14 +126,23 @@ function App() {
     audioRef.current.currentTime = lineTime;
   }
 
-  function handleLoopLine() {}
+  function handleAutoScrollToggle() {
+    autoScrollRef.current = false;
+    clearTimeout(scrollTimerRef.current);
+    scrollTimerRef.current = setTimeout(() => {
+      autoScrollRef.current = true;
+    }, 1500);
+  }
 
   return (
     <div className="bg-neutral-600 max-w-3xl mx-auto rounded-2xl">
       {/* audio tag */}
       <audio src="src/data/6-foot-7-foot.mp3" ref={audioRef}></audio>
       {/* lyrics tab */}
-      <div className="h-120 overflow-y-auto flex flex-col gap-7 p-4 max-w-2xl mx-auto mt-9 rounded-2xl text-2xl bg-auto">
+      <div
+        className="h-120 overflow-y-auto flex flex-col gap-7 p-4 max-w-2xl mx-auto mt-9 rounded-2xl text-2xl bg-auto"
+        onScroll={handleAutoScrollToggle}
+      >
         {lyrics}
       </div>
 
