@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Pin, PinOff } from "lucide-react";
+import lyricsData from "./data/light-it-up.json";
 
 function App() {
   const [playing, setPlaying] = useState(false);
@@ -13,12 +14,14 @@ function App() {
   const pinnedLineObjRef = useRef(null);
   const autoScrollRef = useRef(true);
   const scrollTimerRef = useRef(null);
-  const [audioSrc, setAudioSrc] = useState("");
+  const [audioSrc, setAudioSrc] = useState("src/data/Light-It-Up.mp3");
   const [audioName, setAudioName] = useState("");
-  const [parsedLyrics, setParsedLyrics] = useState(null);
-  const [songName, setSongName] = useState(audioName);
-  const [artistName, setArtistName] = useState("");
-  const parsedLyricsRef = useRef(null);
+  const [parsedLyrics, setParsedLyrics] = useState(lyricsData);
+  const [songName, setSongName] = useState("Light It Up");
+  const [artistName, setArtistName] = useState(
+    "Robin Hustin x TobiMorrow (feat. Jex)",
+  );
+  const parsedLyricsRef = useRef(lyricsData);
   const [lyricsFileName, setLyricsFileName] = useState("");
   const [audioUploaded, setAudioUploaded] = useState(false);
   const [lyricsUploaded, setLyricsUploaded] = useState(false);
@@ -52,7 +55,7 @@ function App() {
       }
       if (e.code === "KeyP") {
         e.preventDefault();
-        handdleTogglePin();
+        handleTogglePin();
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -83,7 +86,7 @@ function App() {
       let endTime = 0;
 
       for (let i = parsedLyricsRef.current.length - 1; i >= 0; i--) {
-        if (parsedLyricsRef.current[i].time < currTime) {
+        if (parsedLyricsRef.current[i].time <= currTime) {
           if (parsedLyricsRef.current[i + 1]) {
             startTime = parsedLyricsRef.current[i].time + offsetRef.current;
             endTime = parsedLyricsRef.current[i + 1].time + offsetRef.current;
@@ -140,7 +143,7 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   handleLyricJump(line.time + offsetRef.current);
-                  handdleTogglePin();
+                  handleTogglePin(line.time, line);
                 }}
               >
                 {loopLine ? <PinOff /> : <Pin />}
@@ -247,11 +250,21 @@ function App() {
     reader.readAsText(file);
   }
 
-  function handdleTogglePin() {
-    pinnedLineTimeRef.current = audioRef.current.currentTime;
-    pinnedLineObjRef.current = isPinningRef.current
-      ? null
-      : getLineByTime(audioRef.current.currentTime);
+  function handleTogglePin(lineTime, lineObj) {
+    const currentLine =
+      lineObj ??
+      getLineByTime(audioRef.current.currentTime - offsetRef.current);
+    const time = lineTime ?? audioRef.current.currentTime - offsetRef.current;
+    console.log(
+      "pinning at time:",
+      time,
+      "currentTime:",
+      audioRef.current.currentTime,
+      "offset:",
+      offsetRef.current,
+    );
+    pinnedLineTimeRef.current = time;
+    pinnedLineObjRef.current = isPinningRef.current ? null : currentLine;
     isPinningRef.current = !isPinningRef.current;
     setLoopLine(isPinningRef.current);
   }
@@ -354,7 +367,7 @@ function App() {
             <button
               className="py-1 px-2 text-white rounded hover:bg-gray-500 cursor-pointer"
               onClick={() => {
-                handdleTogglePin();
+                handleTogglePin();
               }}
             >
               {loopLine ? <PinOff /> : <Pin />}
