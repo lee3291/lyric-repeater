@@ -23,8 +23,6 @@ function App() {
   );
   const parsedLyricsRef = useRef(lyricsData);
   const [lyricsFileName, setLyricsFileName] = useState("");
-  const [audioUploaded, setAudioUploaded] = useState(false);
-  const [lyricsUploaded, setLyricsUploaded] = useState(false);
   const offsetRef = useRef(0);
 
   useEffect(() => {
@@ -195,22 +193,19 @@ function App() {
   }
 
   function handleFileInput(e) {
-    if (audioUploaded) {
-      window.location.reload();
-      return;
-    }
     const file = e.target.files[0];
     const url = URL.createObjectURL(file);
     setAudioSrc(url);
     setAudioName(file.name.replace(/\.[^/.]+$/, ""));
+    setSongName("");
+    setArtistName("");
+    setParsedLyrics(null);
+    parsedLyricsRef.current = null;
+    setLyricsFileName("");
     setAudioUploaded(true);
   }
 
   function handleLyricsUpload(e) {
-    if (lyricsUploaded) {
-      window.location.reload();
-      return;
-    }
     const file = e.target.files[0];
     setLyricsFileName(file.name);
     const reader = new FileReader();
@@ -242,7 +237,6 @@ function App() {
             }
           }
         }
-        setLyricsUploaded(true);
         setParsedLyrics(parsed);
         parsedLyricsRef.current = parsed;
       }
@@ -255,14 +249,6 @@ function App() {
       lineObj ??
       getLineByTime(audioRef.current.currentTime - offsetRef.current);
     const time = lineTime ?? audioRef.current.currentTime - offsetRef.current;
-    console.log(
-      "pinning at time:",
-      time,
-      "currentTime:",
-      audioRef.current.currentTime,
-      "offset:",
-      offsetRef.current,
-    );
     pinnedLineTimeRef.current = time;
     pinnedLineObjRef.current = isPinningRef.current ? null : currentLine;
     isPinningRef.current = !isPinningRef.current;
