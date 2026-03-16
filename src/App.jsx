@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Pin, PinOff } from "lucide-react";
-import lyricsData from "./data/lyrics.json";
 
 function App() {
   const [playing, setPlaying] = useState(false);
@@ -23,7 +22,6 @@ function App() {
   const [lyricsFileName, setLyricsFileName] = useState("");
   const [audioUploaded, setAudioUploaded] = useState(false);
   const [lyricsUploaded, setLyricsUploaded] = useState(false);
-  const [offset, setOffset] = useState(0);
   const offsetRef = useRef(0);
 
   useEffect(() => {
@@ -45,6 +43,21 @@ function App() {
       });
     }
   }, [currLine]);
+
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.code === "Space") {
+        e.preventDefault();
+        handleToggleAudio();
+      }
+      if (e.code === "KeyP") {
+        e.preventDefault();
+        handdleTogglePin();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   function handleToggleAudio() {
     if (audioRef.current.paused) {
@@ -127,12 +140,7 @@ function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   handleLyricJump(line.time + offsetRef.current);
-                  pinnedLineTimeRef.current = audioRef.current.currentTime;
-                  pinnedLineObjRef.current = isPinningRef.current
-                    ? null // unpinning, clear it
-                    : getLineByTime(audioRef.current.currentTime); // pinning, set it
-                  isPinningRef.current = !isPinningRef.current;
-                  setLoopLine(!loopLine);
+                  handdleTogglePin();
                 }}
               >
                 {loopLine ? <PinOff /> : <Pin />}
@@ -239,6 +247,15 @@ function App() {
     reader.readAsText(file);
   }
 
+  function handdleTogglePin() {
+    pinnedLineTimeRef.current = audioRef.current.currentTime;
+    pinnedLineObjRef.current = isPinningRef.current
+      ? null
+      : getLineByTime(audioRef.current.currentTime);
+    isPinningRef.current = !isPinningRef.current;
+    setLoopLine(isPinningRef.current);
+  }
+
   return (
     <div>
       {/* file upload box */}
@@ -322,9 +339,7 @@ function App() {
                 defaultValue="0"
                 className="w-20 bg-neutral-500 text-white text-sm rounded px-2 py-1 text-center"
                 onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setOffset(val);
-                  offsetRef.current = val;
+                  offsetRef.current = Number(e.target.value);
                 }}
               />
             </div>
@@ -339,12 +354,7 @@ function App() {
             <button
               className="py-1 px-2 text-white rounded hover:bg-gray-500 cursor-pointer"
               onClick={() => {
-                pinnedLineTimeRef.current = audioRef.current.currentTime;
-                pinnedLineObjRef.current = isPinningRef.current
-                  ? null
-                  : getLineByTime(audioRef.current.currentTime);
-                isPinningRef.current = !isPinningRef.current;
-                setLoopLine(!loopLine);
+                handdleTogglePin();
               }}
             >
               {loopLine ? <PinOff /> : <Pin />}
