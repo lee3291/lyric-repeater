@@ -8,3 +8,4 @@ Click a lyric to seek to that timestamp @
 Loop a single line @
 Audio file upload @
 LRC file parsing @
+offset feature @

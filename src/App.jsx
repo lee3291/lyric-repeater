@@ -23,6 +23,8 @@ function App() {
   const [lyricsFileName, setLyricsFileName] = useState("");
   const [audioUploaded, setAudioUploaded] = useState(false);
   const [lyricsUploaded, setLyricsUploaded] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const offsetRef = useRef(0);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -70,10 +72,10 @@ function App() {
       for (let i = parsedLyricsRef.current.length - 1; i >= 0; i--) {
         if (parsedLyricsRef.current[i].time < currTime) {
           if (parsedLyricsRef.current[i + 1]) {
-            startTime = parsedLyricsRef.current[i].time + 1.1;
-            endTime = parsedLyricsRef.current[i + 1].time + 1.1;
+            startTime = parsedLyricsRef.current[i].time + offsetRef.current;
+            endTime = parsedLyricsRef.current[i + 1].time + offsetRef.current;
           } else {
-            startTime = parsedLyricsRef.current[i].time + 1.1;
+            startTime = parsedLyricsRef.current[i].time + offsetRef.current;
             endTime = audioRef.current.duration;
           }
           if (audioRef.current.currentTime > endTime) {
@@ -115,7 +117,7 @@ function App() {
             key={line.time}
             ref={isCurrent ? currLinePtagRef : null}
             className={`${className} group flex items-center gap-2`}
-            onClick={() => handleLyricJump(line.time + 1.1)}
+            onClick={() => handleLyricJump(line.time + offsetRef.current)}
           >
             <span
               className={`${isPinned ? "opacity-100 border-r-3 border-red-400" : "opacity-0 group-hover:opacity-100"} transition flex-shrink-0 pr-1`}
@@ -124,7 +126,7 @@ function App() {
                 className="py-1 px-2 text-white rounded cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleLyricJump(line.time + 1.1);
+                  handleLyricJump(line.time + offsetRef.current);
                   pinnedLineTimeRef.current = audioRef.current.currentTime;
                   pinnedLineObjRef.current = isPinningRef.current
                     ? null // unpinning, clear it
@@ -146,7 +148,7 @@ function App() {
     const currTime = audioRef.current.currentTime;
     for (let i = parsedLyricsRef.current.length - 1; i >= 0; i--) {
       // slight delay cause it's too fast.
-      if (parsedLyricsRef.current[i].time <= currTime - 1) {
+      if (parsedLyricsRef.current[i].time <= currTime - offsetRef.current) {
         setCurrLine(parsedLyricsRef.current[i]);
         break;
       }
@@ -310,7 +312,22 @@ function App() {
               <p className="text-white">{`${Math.floor((audioRef.current?.duration || 1) / 60)}:${String(Math.floor((audioRef.current?.duration || 1) % 60)).padStart(2, "0")}`}</p>
             </div>
           </div>
-          <div className="flex flex-row justify-center w-full p-0">
+          <div className="relative flex flex-row justify-center w-full p-0">
+            {/* offset */}
+            <div className="absolute left-0 flex items-center gap-2">
+              <p className="text-white text-sm">Offset</p>
+              <input
+                type="number"
+                step="0.1"
+                defaultValue="0"
+                className="w-20 bg-neutral-500 text-white text-sm rounded px-2 py-1 text-center"
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setOffset(val);
+                  offsetRef.current = val;
+                }}
+              />
+            </div>
             {/* play/pause button */}
             <button
               className="py-1 px-2 text-white rounded hover:bg-gray-500 cursor-pointer"
