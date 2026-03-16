@@ -14,7 +14,7 @@ function App() {
   const pinnedLineObjRef = useRef(null);
   const autoScrollRef = useRef(true);
   const scrollTimerRef = useRef(null);
-  const [audioSrc, setAudioSrc] = useState("src/data/Light-It-Up.mp3");
+  const [audioSrc, setAudioSrc] = useState("/Light-It-Up.mp3");
   const [audioName, setAudioName] = useState("");
   const [parsedLyrics, setParsedLyrics] = useState(lyricsData);
   const [songName, setSongName] = useState("Light It Up");
